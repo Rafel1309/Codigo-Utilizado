@@ -1,0 +1,291 @@
+#################################################################################
+#
+#################################################################################
+
+go devedit simflags="-3d"
+
+work.area x1=0.0 y1=0.0 x2=20.0 y2=5.0
+
+#Pbody
+region reg=1 name=substrate mat=silicon color=0xffcc00 pattern=0x2 z1=0.0 z2=0.08 \
+points="0,0 0,5 20,5 20,0 0,0"
+
+#nbody
+region reg=2 name=nsub mat=silicon color=0xffcc00 pattern=0x2 z1=0.0 z2=0.02 \
+points="0,0 0,5 20,5 20,0 0,0"
+
+#insulator
+region reg=3 name=insulator mat=oxide color=0xff pattern=0x2 z1=-0.02 z2=0.0 \
+points="0,0 0,5 20,5 20,0 0,0"
+
+#drain
+region reg=4 name=drain mat=AlSiTi elec.id=1 color=0xffcc00 pattern=0x4 z1=-0.085 z2=0.0 \
+points="0,0 0,5 6,5 6,0 0,0"
+
+#source
+region reg=5 name=source mat=AlSiTi elec.id=2 color=0xffcc00 pattern=0x4 z1=-0.085 z2=0.0 \
+points="14,0 14,5 20,5 20,0 14,0"
+
+#gate ele
+region reg=6 name=gate mat=ITO elec.id=3 color=0xff00ff pattern=0x2 z1=-0.065 z2=-0.02 \
+points="7,0 7,5 13,5 13,0 7,0"
+
+#substrate ele
+region reg=7 name=substrate mat=aluminum elec.id=4 color=0xff00ff pattern=0x2 z1=0.08 z2=0.09 \
+points="0,0 0,5 20,5 20,0 0,0"
+
+#constr.mesh id=1 x1=0.0 y1=0 x2=20 y2=5 default max.height=0.3 max.width=0.2
+
+constr.mesh max.angle=90 max.ratio=300 max.height=0.5 max.width=0.5 min.height=0.01 min.width=0.01
+constr.mesh type=Semiconductor default
+constr.mesh type=Insulator default 
+constr.mesh type=Metal default
+
+Mesh Mode=MeshBuild
+
+z.plane max.spacing=0.01 max.ratio=10
+
+z.plane z=-0.0085 spacing=0.08
+
+z.plane z=0.0 spacing=0.001
+z.plane z=0.01 spacing=0.002
+z.plane z=0.02 spacing=0.001
+z.plane z=0.08 spacing=0.09
+
+#z.plane max.spacing=.1 max.ratio=10
+
+
+structure outf=CM_solar.str
+tonyplot3d CM_solar.str
+
+go atlas
+
+MESH INF=CM_solar.str
+
+# set contact material to be opaque
+
+material material=AlSiTi imag.index=1000
+
+doping uniform conc=3e15 p.type reg=1 
+doping uniform conc=1e16 n.type reg=2
+
+contact name=drain
+Contact name=source RESISTANCE=10e10
+
+contact name=substrate 
+contact name=gate
+
+structure outf=CM_solar1.str
+tonyplot3d CM_solar1.str
+
+beam num=1 z.origin=-1.0 raytrace=solar_1.str \
+x.origin=10.0 y.origin=2.50 theta=90 phi=0.0 nx=15 ny=15 AM1.5 out.power=solar_AM15.log
+
+tonyplot solar_AM15.log
+
+#models fermi ni.fermi cvt srh
+models optr ubgn analytic ccsmob fldmob kla li srh consrh auger print temp=300
+
+method BICGST
+
+solve init
+
+log outf=b0Vg0.log
+solve previous
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+# solve b1=1 obtaining a solution with a specified optical intensity
+# This specifies that a solution is to be obtained for an optical intensity in the beam numbered “1” of 1.0 Watt/cm2. 
+ 
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+solve vgate=0
+
+log outf=b1Vg0.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+ 
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+solve vgate=1e-6
+solve vgate=1e-5
+solve vgate=1e-4
+solve vgate=1e-3
+solve vgate=1e-2
+solve vgate=1e-1
+solve vgate=1
+
+log outf=b1Vg1.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+solve vgate=1e-6
+solve vgate=1e-5
+solve vgate=1e-4
+solve vgate=1e-3
+solve vgate=1e-2
+solve vgate=1e-1
+solve vgate=1
+solve vgate=1.5
+solve vgate=2
+
+log outf=b1Vg2.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+solve vgate=1e-6
+solve vgate=1e-5
+solve vgate=1e-4
+solve vgate=1e-3
+solve vgate=1e-2
+solve vgate=1e-1
+solve vgate=1
+solve vgate=1.5
+solve vgate=2
+solve vgate=2.5
+solve vgate=3
+
+log outf=b1Vg3.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+solve vgate=1e-6
+solve vgate=1e-5
+solve vgate=1e-4
+solve vgate=1e-3
+solve vgate=1e-2
+solve vgate=1e-1
+solve vgate=1
+solve vgate=1.5
+solve vgate=2
+solve vgate=2.5
+solve vgate=3
+solve vgate=3.5
+solve vgate=4
+
+log outf=b1Vg4.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+
+solve init
+solve previous
+
+solve init
+solve previous
+
+solve b1=1e-07
+solve b1=1e-05
+solve b1=1e-02
+solve b1=1
+
+
+solve vgate=1e-6
+solve vgate=1e-5
+solve vgate=1e-4
+solve vgate=1e-3
+solve vgate=1e-2
+solve vgate=1e-1
+solve vgate=1
+solve vgate=1.5
+solve vgate=2
+solve vgate=2.5
+solve vgate=3
+solve vgate=3.5
+solve vgate=4
+solve vgate=4.5
+solve vgate=5
+
+log outf=b1Vg5.log
+solve vsubstrate=-0.1
+solve vstep=0.02 vfinal=0.55 name=substrate
+log off
+
+tonyplot b0Vg0.log -overlay b1Vg0.log b1Vg1.log b1Vg2.log b1Vg3.log b1Vg4.log b1Vg5.log -set bxVgx.set
+
+save outf=CM_solar2.str
+
+#
+# Extract important figures of merit.
+#
+extract init infile="b0Vg0.log"
+extract name="Jsc_b0Vg0" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b0Vg0_mAcm2" $Jsc_b0Vg0*1e08*1e03
+extract name="Voc_b0Vg0" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg0.log"
+extract name="Jsc_b1Vg0" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg0_mAcm2" $Jsc_b1Vg0*1e08*1e03
+extract name="Voc_b1Vg0" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg1.log"
+extract name="Jsc_b1Vg1" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg1_mAcm2" $Jsc_b1Vg1*1e08*1e03
+extract name="Voc_b1Vg1" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg2.log"
+extract name="Jsc_b1Vg2" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg2_mAcm2" $Jsc_b1Vg2*1e08*1e03
+extract name="Voc_b1Vg2" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg3.log"
+extract name="Jsc_b1Vg3" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg3_mAcm2" $Jsc_b1Vg3*1e08*1e03
+extract name="Voc_b1Vg3" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg4.log"
+extract name="Jsc_b1Vg4" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg4_mAcm2" $Jsc_b1Vg4*1e08*1e03
+extract name="Voc_b1Vg4" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+extract init infile="b1Vg5.log"
+extract name="Jsc_b1Vg5" max(curve(v."substrate", i."drain"))
+extract name="Jsc_b1Vg5_mAcm2" $Jsc_b1Vg5*1e08*1e03
+extract name="Voc_b1Vg5" x.val from curve(v."substrate", i."drain") where y.val=0.0 
+
+#
+quit
+
